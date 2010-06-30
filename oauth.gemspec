@@ -152,6 +152,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<typhoeus>, [">= 0.1.13"])
       s.add_development_dependency(%q<em-http-request>, [">= 0"])
       s.add_development_dependency(%q<curb>, [">= 0.6.6.0"])
+      s.add_development_dependency(%q<net-http-persistent>, [">= 1.2.3"])
     else
       s.add_dependency(%q<actionpack>, [">= 2.2.0", "< 2.3.0"])
       s.add_dependency(%q<rack>, [">= 1.0.0"])
@@ -159,6 +160,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<typhoeus>, [">= 0.1.13"])
       s.add_dependency(%q<em-http-request>, [">= 0"])
       s.add_dependency(%q<curb>, [">= 0.6.6.0"])
+      s.add_dependency(%q<net-http-persistent>, [">= 1.2.3"])
     end
   else
     s.add_dependency(%q<actionpack>, [">= 2.2.0", "< 2.3.0"])
@@ -167,6 +169,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<typhoeus>, [">= 0.1.13"])
     s.add_dependency(%q<em-http-request>, [">= 0"])
     s.add_dependency(%q<curb>, [">= 0.6.6.0"])
+    s.add_dependency(%q<net-http-persistent>, [">= 1.2.3"])
   end
 end
 

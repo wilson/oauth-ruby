@@ -1,5 +1,4 @@
-require 'net/http'
-require 'net/https'
+require 'net/http/persistent'
 require 'oauth/oauth'
 require 'oauth/client/net_http'
 require 'oauth/errors'
@@ -153,15 +152,14 @@ module OAuth
     #
     def request(http_method, path, token = nil, request_options = {}, *arguments)
       if path !~ /^\//
-        @http = create_http(path)
         _uri = URI.parse(path)
         path = "#{_uri.path}#{_uri.query ? "?#{_uri.query}" : ""}"
       end
-
+      request_uri = uri + path
       # override the request with your own, this is useful for file uploads which Net::HTTP does not do
       req = create_signed_request(http_method, path, token, request_options, *arguments)
       return nil if block_given? and yield(req) == :done
-      rsp = http.request(req)
+      rsp = http.request(request_uri, req)
       # check for an error reported by the Problem Reporting extension
       # (http://wiki.oauth.net/ProblemReporting)
       # note: a 200 may actually be an error; check for an oauth_problem key to be sure
@@ -222,7 +220,8 @@ module OAuth
 
     # Sign the Request object. Use this if you have an externally generated http request object you want to sign.
     def sign!(request, token = nil, request_options = {})
-      request.oauth!(http, self, token, options.merge(request_options))
+      h = http.connection_for(uri + request.path)
+      request.oauth!(h, self, token, options.merge(request_options))
     end
 
     # Return the signature_base_string
@@ -235,8 +234,8 @@ module OAuth
     end
 
     def request_endpoint
-	return nil if @options[:request_endpoint].nil?
-	@options[:request_endpoint].to_s
+      return nil if @options[:request_endpoint].nil?
+      @options[:request_endpoint].to_s
     end
 
     def scheme
@@ -288,35 +287,17 @@ module OAuth
 
     # Instantiates the http object
     def create_http(_url = nil)
-
-
-      if !request_endpoint.nil?
-       _url = request_endpoint
-      end
-
-
-      if _url.nil? || _url[0] =~ /^\//
-        our_uri = URI.parse(site)
-      else
-        our_uri = URI.parse(_url)
-      end
-
-
       if proxy.nil?
-        http_object = Net::HTTP.new(our_uri.host, our_uri.port)
+        proxy_uri = nil
       else
         proxy_uri = proxy.is_a?(URI) ? proxy : URI.parse(proxy)
-        http_object = Net::HTTP.new(our_uri.host, our_uri.port, proxy_uri.host, proxy_uri.port, proxy_uri.user, proxy_uri.password)
       end
 
-      http_object.use_ssl = (our_uri.scheme == 'https')
+      http_object = Net::HTTP::Persistent.new('oauth', proxy_uri)
 
       if @options[:ca_file] || CA_FILE
         http_object.ca_file = @options[:ca_file] || CA_FILE
         http_object.verify_mode = OpenSSL::SSL::VERIFY_PEER
-        http_object.verify_depth = 5
-      else
-        http_object.verify_mode = OpenSSL::SSL::VERIFY_NONE
       end
       http_object
     end

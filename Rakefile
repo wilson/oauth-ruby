@@ -18,6 +18,7 @@ begin
     s.add_development_dependency(%q<typhoeus>, [">= 0.1.13"])
     s.add_development_dependency(%q<em-http-request>)
     s.add_development_dependency(%q<curb>, [">= 0.6.6.0"])
+    s.add_development_dependency(%q<net-http-persistent>, [">= 1.2.3"])
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
